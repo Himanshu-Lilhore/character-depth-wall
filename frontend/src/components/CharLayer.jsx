@@ -1,74 +1,83 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect } from 'react';
 
-export default function CharLayer({ index, layerVal, totalLayers, scrollVal, textLayers, setTextLayers, genString }) {
-    const constClass = `whitespace-pre absolute h-full min-w-[1500px] left-0 flex flex-col justify-between`
-    const styles = {
-        zIndex: index,
-        fontSize: `${index * 1.5}rem`,
-        filter: `blur(${(totalLayers - index - 1) / 1.5}px) brightness(${50 + (130 / totalLayers) * (index)}%)`,
-        top: `-${scrollVal * index * 0.25}px`
-    };
+export default function CharLayer({ index, layerVal, totalLayers, scrollVal, textLayers, setTextLayers, genString, scrollSpeed }) {
+    const layerCol = ["text-sky-500", "text-red-500", "text-lime-500", "text-orange-500", "text-cyan-700", "text-pink-500", "text-brown-500"][index]
+    const constClass = `whitespace-pre absolute h-full min-w-[1500px] -left-24 flex flex-col justify-between`;
+    const lastRow = useRef(null)
+    const initialLoad = useRef(true)
+    const defaultBlur = (totalLayers - index - 1) / 1
+    // const blurAmount = scrollSpeed > 0 ? (scrollSpeed/50 * (index + 1) * 40) : defaultBlur
 
-    const lastRow = useRef()
+    const staticStyles = {
+        zIndex: index + 1,
+        fontSize: `${(index + 1.2) * 1.2}rem`,
+        transition: 'filter 0.2s ease-in-out, transform 0.3s ease-in-out'
+    }
+
+    let dynamicStyles = {
+        filter: `blur(${defaultBlur}px) brightness(${30 + (130 / totalLayers) * (index)}%)`,
+        top: `-${scrollVal * (index + 0.2) * 0.25}px`
+    }
+
 
     useEffect(() => {
         const observer = new IntersectionObserver(entries => {
             entries.forEach(entry => {
-                const intersecting = entry.isIntersecting
-                entry.target.style.backgroundColor = intersecting ? "blue" : "orange"
-                setTextLayers(oldVal => {
-                    let totalNewLayers = 5
-                    console.log(`Adding ${totalNewLayers} new rows to layer ${index + 1}`)
-                    while (totalNewLayers--) {
-                        // textLayers[index].push(genString())
-                        if(totalNewLayers===1) {
-                            oldVal[index].push("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
-                            break
+                if (entry.isIntersecting && !initialLoad.current) {
+                    observer.disconnect();
+
+                    setTextLayers(oldVal => {
+                        let totalNewLayers = 10;
+                        console.log(`Adding ${totalNewLayers} new rows to layer ${index + 1}`);
+                        while (totalNewLayers--) {
+                            oldVal[index].push(genString());
                         }
-                        oldVal[index].push("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-                    }
-                    return (
-                        [...oldVal]
-                    )
-                })
-            })
-            console.log(entries)
-        })
-        
+                        return [...oldVal];
+                    });
+
+                    setTimeout(() => {
+                        if (lastRow.current) {
+                            observer.observe(lastRow.current);
+                        }
+                    }, 100);
+                    console.log(entries);
+                }
+            });
+        });
+
         if (lastRow.current) {
             observer.observe(lastRow.current);
         }
 
         return () => {
-            if (lastRow.current) {
-                observer.unobserve(lastRow.current);
-            }
+            observer.disconnect();
         };
+    }, [index, setTextLayers, genString]);
 
-    }, [textLayers])
-
-useEffect(() => {
-    console.log(`layerVal length = ${textLayers[index].length}`)
-}, [textLayers])
+    useEffect(() => {
+        if (scrollVal === 0) {
+            initialLoad.current = true;
+        } else {
+            initialLoad.current = false;
+        }
+    }, [scrollVal]);
 
     return (
-        <>
-            <div className={constClass} style={styles}>
-                {textLayers[index].map((line, idx) => {
-                    if (idx === textLayers[index].length - 1) {
-                        return (
-                            <div key={idx} refring ref={lastRow} className="text-cyan-500 flex justify-center opacity-90">
-                                {line}
-                            </div>
-                        )
-                    }
+        <div className={constClass} style={{ ...staticStyles, ...dynamicStyles }}>
+            {textLayers[index].map((line, idx) => {
+                if (idx === textLayers[index].length - 1) {
                     return (
-                        <div key={idx} className="text-cyan-500 flex justify-center opacity-90">
+                        <div key={idx} ref={lastRow} className={`${layerCol} flex justify-center opacity-90`}>
                             {line}
                         </div>
-                    )
-                })}
-            </div>
-        </>
-    )
+                    );
+                }
+                return (
+                    <div key={idx} className={`${layerCol} flex justify-center opacity-90`}>
+                        {line}
+                    </div>
+                );
+            })}
+        </div>
+    );
 }
