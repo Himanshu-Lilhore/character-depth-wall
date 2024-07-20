@@ -1,8 +1,7 @@
-# React + Vite
+# character-depth-wall
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[Live link](https://himanshu-lilhore.github.io/character-depth-wall/) ↗️
+Created using React.js
+IntersectionObserver was used to generated rows infinitely.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+![2q6ijl1h1-tqd9eY-ezgif com-crop](https://github.com/user-attachments/assets/318df562-31ba-4e3a-a9dc-1e69f55f5bea)
